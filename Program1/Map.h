@@ -27,7 +27,7 @@ private:
 			return;
 		}
 
-		Color c;
+		Color color;
 		Node<Key, Value>* parent = nullptr, * grandparent = nullptr, * uncle = nullptr;
 
 		while (node != root && node->getColor() == red && node->getParent()->getColor() == red)
@@ -53,9 +53,9 @@ private:
 						parent = node->getParent();
 					}
 					rightRotate(grandparent);
-					c = parent->getColor();
+					color = parent->getColor();
 					parent->setColor(grandparent->getColor());
-					grandparent->setColor(c);
+					grandparent->setColor(color);
 					node = parent;
 				}
 			}
@@ -78,9 +78,9 @@ private:
 						parent = node->getParent();
 					}
 					leftRotate(grandparent);
-					c = parent->getColor();
+					color = parent->getColor();
 					parent->setColor(grandparent->getColor());
-					grandparent->setColor(c);
+					grandparent->setColor(color);
 					node = parent;
 				}
 			}
@@ -205,40 +205,40 @@ private:
 		}
 	}
 
-	void setKeys(List<Key>& ls, Node<Key, Value>* node) 
+	void setKeys(List<Key>& key, Node<Key, Value>* node) 
 	{
 		while (node) 
 		{
-			setKeys(ls, node->getLeft());
-			ls.push_back(node->getKey());
-			setKeys(ls, node->getRight());
+			setKeys(key, node->getLeft());
+			key.push_back(node->getKey());
+			setKeys(key, node->getRight());
 			return;
 		}
 	}
 
-	void setValues(List<Value>& ls, Node<Key, Value>* node) 
+	void setValues(List<Value>& value, Node<Key, Value>* node) 
 	{
 		while (node) 
 		{
-			setValues(ls, node->getLeft());
-			ls.push_back(node->getValue());
-			setValues(ls, node->getRight());
+			setValues(value, node->getLeft());
+			value.push_back(node->getValue());
+			setValues(value, node->getRight());
 			return;
 		}
 	}
 	 
-	Node<Key, Value>* replace(Node<Key, Value>* x) // finds node that replaces a deleted node in BST 
+	Node<Key, Value>* replace(Node<Key, Value>* node) // finds node that replaces a deleted node in BST 
 	{
-		if (x->getLeft() != nullptr && x->getRight() != nullptr) // when node have 2 children 
-			return minValueNode(x->getRight());
+		if (node->getLeft() != nullptr && node->getRight() != nullptr) // when node have 2 children 
+			return minValueNode(node->getRight());
  
-		if (x->getLeft() == nullptr && x->getRight() == nullptr) // when leaf
+		if (node->getLeft() == nullptr && node->getRight() == nullptr) // when leaf
 			return nullptr;
  
-		if (x->getLeft() != nullptr) // when single child
-			return x->getLeft();
+		if (node->getLeft() != nullptr) // when single child
+			return node->getLeft();
 		else
-			return x->getRight();
+			return node->getRight();
 	}
 	 
 	Node<Key, Value>* search(Key key) // returns pointer to element with required key 
@@ -258,48 +258,48 @@ private:
 		return temp;
 	}
 
-	void swapValues(Node<Key, Value>* u, Node<Key, Value>* v) 
+	void swapValues(Node<Key, Value>* firstNode, Node<Key, Value>* secondNode) 
 	{
-		Key key = u->getKey();
-		u->setKey(v->getKey());
-		v->setKey(key);
-		Value value = u->getValue();
-		u->setValue(v->getValue());
-		v->setValue(value);
+		Key key = firstNode->getKey();
+		firstNode->setKey(secondNode->getKey());
+		secondNode->setKey(key);
+		Value value = firstNode->getValue();
+		firstNode->setValue(secondNode->getValue());
+		secondNode->setValue(value);
 	}
 	 
-	void deleteNode(Node<Key, Value>* v) // deletes the given node 
+	void deleteNode(Node<Key, Value>* deletedNode) // deletes the given node 
 	{
-		Node<Key, Value>* u = replace(v);
+		Node<Key, Value>* temp = replace(deletedNode);
  
-		// True when u and v are both black
-		bool uvBlack = ((u == nullptr || u->getColor() == black) && (v->getColor() == black));
-		Node<Key, Value>* parent = v->getParent();
+		// True when temp and deletedNode are both black
+		bool uvBlack = ((temp == nullptr || temp->getColor() == black) && (deletedNode->getColor() == black));
+		Node<Key, Value>* parent = deletedNode->getParent();
 
-		if (u == nullptr) 
+		if (temp == nullptr) 
 		{
-			// u is nullptr therefore v is leaf 
-			if (v == root) {
-				// v is root, making root nullptr 
+			// temp is nullptr therefore deletedNode is leaf 
+			if (deletedNode == root) {
+				// deletedNode is root, making root nullptr 
 				root = nullptr;
 			}
 			else 
 			{
 				if (uvBlack) 
 				{
-					// u and v both black 
-					// v is leaf, fix double black at v 
-					fixTree(v);
+					// temp and deletedNode both black 
+					// deletedNode is leaf, fix double black at deletedNode 
+					fixTree(deletedNode);
 				}
 				else 
 				{
-					// u or v is red 
-					if (v->sibling() != nullptr) 
-						v->sibling()->setColor(red); // sibling is not nullptr, make it red
+					// temp or deletedNode is red 
+					if (deletedNode->sibling() != nullptr) 
+						deletedNode->sibling()->setColor(red); // sibling is not nullptr, make it red
 				}
 
-				// delete v from the tree 
-				if (v->isOnLeft()) 
+				// delete deletedNode from the tree 
+				if (deletedNode->isOnLeft()) 
 				{
 					parent->setLeft(nullptr);
 				}
@@ -308,60 +308,60 @@ private:
 					parent->setRight(nullptr);
 				}
 			}
-			delete v;
+			delete deletedNode;
 			return;
 		}
-		if (v->getLeft() == nullptr || v->getRight() == nullptr) 
+		if (deletedNode->getLeft() == nullptr || deletedNode->getRight() == nullptr) 
 		{
-			// v has 1 child 
-			if (v == root) 
+			// deletedNode has 1 child 
+			if (deletedNode == root) 
 			{
-				// v is root, assign the value of u to v, and delete u 
-				v->setKey(u->getKey());
-				v->setLeft(nullptr);
-				v->setRight(nullptr);
-				delete u;
+				// deletedNode is root, assign the value of temp to deletedNode, and delete temp 
+				deletedNode->setKey(temp->getKey());
+				deletedNode->setLeft(nullptr);
+				deletedNode->setRight(nullptr);
+				delete temp;
 			}
 			else 
 			{
-				// Detach v from tree and move u up 
-				if (v->isOnLeft()) 
+				// Detach deletedNode from tree and move temp up 
+				if (deletedNode->isOnLeft()) 
 				{
-					parent->setLeft(u);
+					parent->setLeft(temp);
 				}
 				else 
 				{
-					parent->setRight(u);
+					parent->setRight(temp);
 				}
-				delete v;
-				u->setParent(parent);
+				delete deletedNode;
+				temp->setParent(parent);
 				if (uvBlack) 
 				{
-					// u and v both black, fix double black at u 
-					fixTree(u);
+					// temp and deletedNode both black, fix double black at temp 
+					fixTree(temp);
 				}
 				else 
 				{
-					// u or v red, color u black 
-					u->setColor(black);
+					// temp or deletedNode red, color temp black 
+					temp->setColor(black);
 				}
 			}
 			return;
 		}
-		// v has 2 children, swap values 
-		swapValues(u, v);
-		deleteNode(u);
+		// deletedNode has 2 children, swap values 
+		swapValues(temp, deletedNode);
+		deleteNode(temp);
 	}
 	
-	void fixTree(Node<Key, Value>* x) // fixes tree after delete
+	void fixTree(Node<Key, Value>* rootNode) // fixes tree after delete
 	{
-		if (x == root) // Reached root 
+		if (rootNode == root) // Reached root 
 			return;
 
-		Node<Key, Value>* sibling = x->sibling(), * parent = x->getParent();
+		Node<Key, Value>* sibling = rootNode->sibling(), * parent = rootNode->getParent();
 		if (sibling == nullptr) 
 		{
-			// No sibiling, double black pushed up 
+			// No sibiling, black pushed up 
 			fixTree(parent);
 		}
 		else 
@@ -381,7 +381,7 @@ private:
 					// right case 
 					leftRotate(parent);
 				}
-				fixTree(x);
+				fixTree(rootNode);
 			}
 			else 
 			{
@@ -448,42 +448,42 @@ public:
 
 	void insert(Key key, Value value) //Inserts node using key with value 
 	{
-		Node<Key, Value>* temp = new Node<Key, Value>(key, value);
+		Node<Key, Value>* insertedNode = new Node<Key, Value>(key, value);
 		if (!root) 
 		{
-			root = temp;
+			root = insertedNode;
 		}
 		else 
 		{
-			Node<Key, Value>* p = root;
-			Node<Key, Value>* q = nullptr;
-			while (p != nullptr) 
+			Node<Key, Value>* rootNode = root;
+			Node<Key, Value>* temp = nullptr;
+			while (rootNode != nullptr) 
 			{
-				q = p;
-				if (p->getKey() < temp->getKey()) 
+				temp = rootNode;
+				if (rootNode->getKey() < insertedNode->getKey()) 
 				{
-					p = p->getRight();
+					rootNode = rootNode->getRight();
 				}
-				else if (p->getKey() == temp->getKey())
+				else if (rootNode->getKey() == insertedNode->getKey())
 				{
 					throw invalid_argument("This element is already in the map");
 				}
 				else 
 				{
-					p = p->getLeft();
+					rootNode = rootNode->getLeft();
 				}
 			}
-			temp->setParent(q);
-			if (q->getKey() <= temp->getKey()) 
+			insertedNode->setParent(temp);
+			if (temp->getKey() <= insertedNode->getKey()) 
 			{
-				q->setRight(temp);
+				temp->setRight(insertedNode);
 			}
 			else 
 			{
-				q->setLeft(temp);
+				temp->setLeft(insertedNode);
 			}
 		}
-		balanceTree(temp);
+		balanceTree(insertedNode);
 	}
 
 	void remove(Key key) //Removes an element 
